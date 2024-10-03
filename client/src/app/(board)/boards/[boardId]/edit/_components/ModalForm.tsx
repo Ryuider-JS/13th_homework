@@ -1,15 +1,26 @@
 /** @format */
 
+import { IValidPasswordState } from '@/models/validationPasssword.type';
 import isValidationPasswordBoard from '@/actions/isValidationPasswordBoard';
 import { useFormState } from 'react-dom';
+import useOnClickPush from '@/hooks/useOnClickPush';
+import { useParams } from 'next/navigation';
 
 export default function ModalForm() {
-	const [state, formAction] = useFormState(isValidationPasswordBoard, {
-		data: 1,
+	const { boardId } = useParams();
+	const onClickPush = useOnClickPush();
+
+	const [state, formAction] = useFormState<IValidPasswordState>(isValidationPasswordBoard, {
+		boardId,
+		error: null,
+		validation: false,
 	});
+
+	if (state.validation) onClickPush(`/boards/${boardId}/edit`);
 	return (
 		<>
 			<form
+				autoComplete="off"
 				className="mt-4 flex w-2/3 items-center justify-evenly rounded-2xl border-2 border-[#c1c1c1]"
 				action={formAction}
 			>
@@ -32,9 +43,7 @@ export default function ModalForm() {
 					/>
 				</svg>
 			</form>
-			<div className="prose-me_16_24 mt-2 text-sm text-red-500">
-				비밀번호가 일치하지 않습니다.
-			</div>
+			<div className="prose-me_16_24 mt-2 text-sm text-red-500">{state?.error}</div>
 		</>
 	);
 }
