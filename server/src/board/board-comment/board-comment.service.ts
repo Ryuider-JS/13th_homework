@@ -1,18 +1,19 @@
+import * as bcrypt from 'bcrypt';
+
 import {
     BadRequestException,
     Injectable,
     NotFoundException,
+    UnauthorizedException,
 } from '@nestjs/common';
 
 import { BoardComment } from './entities/board-comment.entity';
 import { BoardCommentRepository } from './board-comment.repository';
 import { BoardRepository } from '../repositories/board.repository';
 import { BoardService } from '../board.service';
-// import { BoardCommentRepository } from './board-comment.repository';
 import { CreateBoardCommentDto } from './dto/create-board-comment.dto';
 import { UpdateBoardCommentDto } from './dto/update-board-comment.dto';
 
-//     private readonly boardCommentRepository: BoardCommentRepository,
 @Injectable()
 export class BoardCommentService {
     constructor(
@@ -24,22 +25,9 @@ export class BoardCommentService {
         boardId: number,
         createBoardCommentDto: CreateBoardCommentDto,
     ): Promise<BoardComment> {
-        const isExistBoard = await this.boardRepsitory.findBoard(boardId);
-
-        if (!isExistBoard) {
-            throw new NotFoundException(
-                `boardID: ${boardId} is not found in Board`,
-            );
-        }
-
+        await this.isExistBoard(boardId);
         if (createBoardCommentDto.parentId) {
-            const isExistParentComment =
-                await this.boardCommentRepository.findCommentById(
-                    createBoardCommentDto.parentId,
-                );
-            if (!isExistParentComment) {
-                throw new BadRequestException('Parent comment not found');
-            }
+            await this.isExistParentComment(createBoardCommentDto.parentId);
         }
 
         const hashPassword: string = await this.boardService.transformPassword(
@@ -57,19 +45,74 @@ export class BoardCommentService {
         return await this.boardCommentRepository.saveComment(comment);
     }
 
-    findAll() {
-        return `This action returns all boardComment`;
+    async findAllComment(boardId: number): Promise<BoardComment[]> {
+        await this.isExistBoard(boardId);
+
+        return this.boardCommentRepository.findAllComment(boardId);
     }
 
-    findOne(id: number) {
-        return `This action returns a #${id} boardComment`;
+    async updateComment(
+        boardId: number,
+        updateBoardCommentDto: UpdateBoardCommentDto,
+        password: string,
+        commentId: string,
+    ): Promise<void> {
+        await this.isExistBoard(boardId);
+
+        if (updateBoardCommentDto.parentId) {
+            await this.isExistParentComment(updateBoardCommentDto.parentId);
+        }
+
+        await this.validateBoardComment(commentId, password);
+        this.boardCommentRepository.updateComment(
+            commentId,
+            updateBoardCommentDto,
+        );
     }
 
-    update(id: number, updateBoardCommentDto: UpdateBoardCommentDto) {
-        return `This action updates a #${id} boardComment`;
+    async removeComment(commentId: string): Promise<boolean> {
+        await this.boardCommentRepository.deleteComment(commentId);
+        return true;
     }
 
-    remove(id: number) {
-        return `This action removes a #${id} boardComment`;
+    async isExistBoard(boardId: number): Promise<void> {
+        const isExist = await this.boardRepsitory.findBoard(boardId);
+
+        if (!isExist) {
+            throw new NotFoundException(
+                `boardID: ${boardId} is not found in Board`,
+            );
+        }
+    }
+
+    async isExistParentComment(parentId: string): Promise<void> {
+        const isExistParentComment =
+            await this.boardCommentRepository.findComment(parentId);
+        if (!isExistParentComment) {
+            throw new BadRequestException(
+                `Parent ID ${parentId} comment not found`,
+            );
+        }
+    }
+
+    async validateBoardComment(
+        commentId: string,
+        password: string,
+    ): Promise<void> {
+        const comment =
+            await this.boardCommentRepository.findComment(commentId);
+
+        if (!comment) {
+            throw new NotFoundException(`commentId ${commentId} is not found`);
+        }
+
+        const validatePassword = await bcrypt.compare(
+            password,
+            comment.password,
+        );
+
+        if (!validatePassword) {
+            throw new UnauthorizedException(`password is invalid`);
+        }
     }
 }

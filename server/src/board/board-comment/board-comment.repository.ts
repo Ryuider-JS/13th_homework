@@ -1,8 +1,10 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { BoardComment } from './entities/board-comment.entity';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { MongoRepository } from 'typeorm';
 import { CreateBoardCommentDto } from './dto/create-board-comment.dto';
+import { ObjectId } from 'mongodb';
+import { UpdateBoardCommentDto } from './dto/update-board-comment.dto';
 
 @Injectable()
 export class BoardCommentRepository {
@@ -11,8 +13,10 @@ export class BoardCommentRepository {
         private readonly boardCommentRepository: MongoRepository<BoardComment>,
     ) {}
 
-    async findCommentById(parentId: string): Promise<BoardComment | null> {
-        return await this.boardCommentRepository.findOneBy({ parentId });
+    async findComment(id: string) {
+        return await this.boardCommentRepository.findOne({
+            where: { _id: new ObjectId(id) },
+        });
     }
 
     createComment(
@@ -30,6 +34,36 @@ export class BoardCommentRepository {
     }
 
     async saveComment(comment: BoardComment): Promise<BoardComment> {
-        return this.boardCommentRepository.save(comment);
+        return await this.boardCommentRepository.save(comment);
+    }
+
+    async findAllComment(boardId: number): Promise<BoardComment[]> {
+        return await this.boardCommentRepository.find({ where: { boardId } });
+    }
+
+    async updateComment(
+        commentId: string,
+        updateBoardCommentDto: UpdateBoardCommentDto,
+    ): Promise<boolean> {
+        const updateBoardDB = await this.boardCommentRepository.update(
+            new ObjectId(commentId),
+            updateBoardCommentDto,
+        );
+        if (updateBoardDB.affected === 0) {
+            throw new NotFoundException(
+                `commentId: ${commentId} is not update`,
+            );
+        }
+        return true;
+    }
+
+    async deleteComment(commentId: string): Promise<void> {
+        const deleteComment = await this.findComment(commentId);
+
+        if (!deleteComment) {
+            throw new NotFoundException(`commentId: ${commentId} is not found`);
+        } else {
+            await this.boardCommentRepository.softRemove(deleteComment);
+        }
     }
 }

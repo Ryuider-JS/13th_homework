@@ -3,13 +3,13 @@ import {
     Get,
     Post,
     Body,
-    Patch,
     Param,
     Delete,
     HttpCode,
     HttpStatus,
     ParseIntPipe,
     UseInterceptors,
+    Put,
 } from '@nestjs/common';
 import { BoardCommentService } from './board-comment.service';
 import { CreateBoardCommentDto } from './dto/create-board-comment.dto';
@@ -36,25 +36,33 @@ export class BoardCommentController {
     }
 
     @Get()
-    findAll() {
-        return this.boardCommentService.findAll();
+    @ResponseMessage('comment 전체가 성공적으로 가져왔습니다.')
+    @HttpCode(HttpStatus.OK)
+    findAll(@Param('boardId', ParseIntPipe) boardId: number) {
+        return this.boardCommentService.findAllComment(boardId);
     }
 
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.boardCommentService.findOne(+id);
-    }
-
-    @Patch(':id')
+    @Put(':commentId')
+    @ResponseMessage('comment가 성공적으로 수정했습니다.')
+    @HttpCode(HttpStatus.OK)
     update(
-        @Param('id') id: string,
+        @Param('boardId', ParseIntPipe) boardId: number,
+        @Param('commentId') commentId: string,
         @Body() updateBoardCommentDto: UpdateBoardCommentDto,
     ) {
-        return this.boardCommentService.update(+id, updateBoardCommentDto);
+        const { password, ...restUpdateBoardComment } = updateBoardCommentDto;
+        return this.boardCommentService.updateComment(
+            boardId,
+            restUpdateBoardComment,
+            password,
+            commentId,
+        );
     }
 
-    @Delete(':id')
-    remove(@Param('id') id: string) {
-        return this.boardCommentService.remove(+id);
+    @Delete(':commentId')
+    @ResponseMessage('comment를 성공적으로 삭제했습니다.')
+    @HttpCode(HttpStatus.OK)
+    remove(@Param('commentId') commentId: string) {
+        return this.boardCommentService.removeComment(commentId);
     }
 }
