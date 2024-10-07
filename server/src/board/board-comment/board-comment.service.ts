@@ -9,7 +9,7 @@ import {
 
 import { BoardComment } from './entities/board-comment.entity';
 import { BoardCommentRepository } from './board-comment.repository';
-import { BoardCommentResponseDto } from './entities/board-comment-response.entity';
+import { BoardCommentResponse } from './responses/board-comment-response.entity';
 import { BoardRepository } from '../repositories/board.repository';
 import { BoardService } from '../board.service';
 import { CreateBoardCommentDto } from './dto/create-board-comment.dto';
@@ -52,7 +52,13 @@ export class BoardCommentService {
         const boardComments =
             await this.boardCommentRepository.findAllComment(boardId);
 
-        return boardComments;
+        const restBoardComments = boardComments.map((item) => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { password, ...rest } = item;
+            return rest;
+        });
+
+        return this.makeCommentMap(restBoardComments);
     }
 
     async updateComment(
@@ -60,7 +66,7 @@ export class BoardCommentService {
         updateBoardCommentDto: UpdateBoardCommentExceptCommentDto,
         password: string,
         commentId: string,
-    ): Promise<BoardCommentResponseDto> {
+    ): Promise<BoardCommentResponse> {
         await this.isExistBoard(boardId);
 
         if (updateBoardCommentDto.parentId) {
@@ -121,7 +127,7 @@ export class BoardCommentService {
         }
     }
 
-    makeCommentMap(boardComments: BoardComment[]) {
+    makeCommentMap(boardComments: BoardCommentResponse[]) {
         const commentMap = new Map<string, any>();
 
         boardComments.forEach((comment) => {
@@ -139,5 +145,6 @@ export class BoardCommentService {
                 }
             }
         });
+        return Array.from(commentMap.values());
     }
 }
