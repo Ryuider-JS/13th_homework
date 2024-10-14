@@ -8,25 +8,39 @@ import BoardItem from './BoardItem';
 import BoardLoading from './BoardLoading';
 import ErrorComponent from './ErrorComponent';
 import { IApiResponseData } from '@/models/apiResponse';
+import { ISearchParamsProps } from '@/models/children.type';
+import { PaginationWithLinks } from '@/components/common/PaginationWithLinks';
 import { boardUrlEndPoint } from '@/apis/config';
 import fetcher from '@/libs/fetcher';
 // import { useQuery } from '@apollo/client';
 import useSWR from 'swr';
 
-export default function BoardItemContainer() {
-	const { data, isLoading, error } = useSWR(boardUrlEndPoint, fetcher, {
-		suspense: true,
-		revalidateOnFocus: false,
-		fallbackData: [],
-	});
+export default function BoardItemContainer({ searchParams }: ISearchParamsProps) {
+	const page = parseInt((searchParams.page as string) || '1');
+	const take = parseInt((searchParams.page as string) || '10');
+	const { data, isLoading, error } = useSWR(
+		`${boardUrlEndPoint}?page=${page}&take=${take}`,
+		fetcher,
+		{
+			suspense: true,
+			revalidateOnFocus: false,
+			fallbackData: [],
+		},
+	);
 	// const { data, loading } = useQuery<GetBoardsQuery>(GetBoardDocument);
 
 	if (isLoading) {
 		return <BoardLoading />;
 	}
 	if (error) return <ErrorComponent />;
-	return (
-		Array.isArray(data) &&
-		data.map((board: IApiResponseData) => <BoardItem key={board.boardId} board={board} />)
-	);
+
+	if (data && !isLoading)
+		return (
+			<>
+				{data.result.map((board: IApiResponseData) => (
+					<BoardItem key={board.boardId} board={board} />
+				))}
+				<PaginationWithLinks page={page} pageSize={take} totalCount={data.totalCount} />
+			</>
+		);
 }
