@@ -8,19 +8,37 @@ import { boardUrlEndPoint, commentUrlEndPoint } from '@/apis/config';
 
 import BoardCommentEmpty from './BoardCommentEmpty';
 import BoardCommentSection from './BoardCommentSection';
+import Spinner from '@/components/common/Spinner';
 import fetcher from '@/libs/fetcher';
+import { useCommentPageStore } from '@/stores/useCommentPage';
 import useSWR from 'swr';
 
-export default function BoardCommentList({ data, boardId }: IBoardCommentProp) {
-	const { data: cachedData } = useSWR(
-		`${boardUrlEndPoint}/${boardId}${commentUrlEndPoint}`,
+export default function BoardCommentList({ boardId }: IBoardCommentProp) {
+	const { page } = useCommentPageStore();
+	const { data, isLoading, error } = useSWR(
+		`${boardUrlEndPoint}/${boardId}${commentUrlEndPoint}?page=${page}`,
 		fetcher,
-		{ fallbackData: data },
+		{
+			revalidateOnFocus: false,
+		},
 	);
-	if (cachedData.length === 0) {
+	if (isLoading) {
+		return (
+			<div className="flex w-full items-center justify-center">
+				<Spinner />
+			</div>
+		);
+	}
+
+	if (data.length === 0 || error) {
 		return <BoardCommentEmpty />;
 	}
-	return cachedData.map((comment: IResponseComment) => (
-		<BoardCommentSection key={comment._id} comment={comment} />
-	));
+
+	return (
+		<>
+			{data.map((comment: IResponseComment) => (
+				<BoardCommentSection key={comment._id} comment={comment} />
+			))}
+		</>
+	);
 }
