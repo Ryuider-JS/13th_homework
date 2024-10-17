@@ -2,6 +2,7 @@
 
 import BoardCommentDeleteImage from './BoardCommentDeleteImage';
 import BoardCommentEditImage from './BoardCommentEditImage';
+import BoardCommentNoReplyWrapper from './BoardCommentNoReplyWrapper';
 import BoardCommentReplyWrapper from './BoardCommentReplyWrapper';
 import BoardCommentStar from './BoardCommentStar';
 import { IBoardComment } from '@/models/comment.type';
@@ -13,6 +14,8 @@ export default function BoardComment({ comment, setIsEdit }: ICommentEditProps) 
 	const { _id, createdAt, author, content, rating, replies } = comment as IBoardComment;
 
 	const changeDate = changeDateToISO(createdAt);
+
+	console.log(replies);
 
 	return (
 		<>
@@ -30,10 +33,12 @@ export default function BoardComment({ comment, setIsEdit }: ICommentEditProps) 
 			<div className="prose-r_16_24">{content}</div>
 			<div className="prose-r_14_20 text-[#818181]">{changeDate}</div>
 			<div className="prose-sb_16_24 w-24">
-				{replies.length ? (
+				{!replies ? (
+					<BoardCommentNoReplyWrapper parentId={_id} />
+				) : replies.length ? (
 					<BoardCommentReplyWrapper replies={replies} />
 				) : (
-					<div className="cursor-pointer">+ 답글 달기</div>
+					<BoardCommentNoReplyWrapper parentId={_id} />
 				)}
 			</div>
 		</>
