@@ -1,5 +1,5 @@
-import { BoardComment } from './entities/board-comment.entity';
 import { BoardCommentController } from './board-comment.controller';
+import { BoardCommentEntity } from './entity/board-comment.entity';
 import { BoardCommentRepository } from './board-comment.repository';
 import { BoardCommentResolver } from './board-comment.resolver';
 import { BoardCommentService } from './board-comment.service';
@@ -11,7 +11,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([BoardComment, BoardEntity], 'mongodb'),
+        TypeOrmModule.forFeature([BoardCommentEntity, BoardEntity], 'mongodb'),
         BoardModule,
     ],
     controllers: [BoardCommentController],
