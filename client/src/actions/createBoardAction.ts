@@ -1,56 +1,79 @@
 /** @format */
 'use server';
+// [ ] 왜 formData에서 address를 못 들고 오는걸까..? 나중에 디버깅하기
 
-import { ICreateFormBoard } from '@/models/board.type';
+import { ICreateFormBoard, IFormLower } from '@/models/board.type';
+
 import { IFormStateError } from '@/models/formBoardError';
+import { filterFormImage } from '@/utils/filterFormImage';
+import { filterFormRequire } from '@/utils/filterFormRequire';
 import postBoard from '../apis/boards/postBoard';
+import uploadImageS3 from '@/apis/boards/uploadImageS3';
 
-const required = '필수입력 사항입니다.';
+const requiredFields = ['Author', 'Password', 'Title', 'Content'];
 
 export async function createBoardAction(
 	prevState: IFormStateError,
 	formData: FormData,
 ): Promise<IFormStateError> {
-	// 왜 formData에서 address를 못 들고 오는걸까..? 나중에 디버깅하기
-	const author = formData.get('Author') as string;
-	const password = formData.get('Password') as string;
-	const title = formData.get('Title') as string;
-	const content = formData.get('Content') as string;
-	const youtubeUrl = formData.get('YoutubeUrl') as string;
-	const address = formData.get('Address') as string;
-	const detailAddress = formData.get('DetailAddress') as string;
+	const fieldValues = Object.fromEntries(
+		requiredFields.map((key) => [key.toLowerCase(), formData.get(key) as string]),
+	) as unknown as IFormLower;
 
-	if (!author || !password || !title || !content)
+	const youtubeUrl = (formData.get('YoutubeUrl') as string) || '';
+	const address = (formData.get('Address') as string) || '';
+	const detailAddress = (formData.get('DetailAddress') as string) || '';
+	let images = (formData.getAll('image') as File[]) || [];
+
+	images = images.filter((image) => image.size !== 0);
+
+	const { errors, hasError } = filterFormRequire(fieldValues, requiredFields);
+
+	if (hasError) {
 		return {
 			data: null,
 			errors: {
-				author: author ? undefined : required,
-				password: password ? undefined : required,
-				title: title ? undefined : required,
-				content: content ? undefined : required,
-			},
-		};
-	else {
-		const data: ICreateFormBoard = {
-			author,
-			title,
-			password,
-			content,
-			youtubeUrl,
-			address,
-			detailAddress,
-		};
-
-		const responseData = await postBoard(data);
-
-		return {
-			data: responseData,
-			errors: {
-				author: undefined,
-				password: undefined,
-				title: undefined,
-				content: undefined,
+				...errors,
+				general: '',
 			},
 		};
 	}
+
+	let imageUrl: string[] = [];
+	if (images.length > 0) {
+		if (!filterFormImage(images))
+			return {
+				data: null,
+				errors: {
+					author: '',
+					password: '',
+					title: '',
+					content: '',
+					general: '이미지가 형식에 맞지 않습니다.',
+				},
+			};
+
+		imageUrl = await uploadImageS3(images);
+	}
+
+	const finalData: ICreateFormBoard = {
+		...fieldValues,
+		imageUrl,
+		youtubeUrl,
+		address,
+		detailAddress,
+	};
+
+	const data = await postBoard(finalData);
+
+	return {
+		data,
+		errors: {
+			author: '',
+			password: '',
+			title: '',
+			content: '',
+			general: '',
+		},
+	};
 }
