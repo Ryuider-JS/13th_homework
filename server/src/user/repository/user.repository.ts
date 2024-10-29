@@ -15,9 +15,8 @@ export class UserRepository {
         private readonly userRepository: Repository<User>,
     ) {}
 
-    async createUser(authCredentialDTO: userDTO): Promise<User> {
-        const { email, password } = authCredentialDTO;
-        const user = this.userRepository.create({ email, password });
+    async createUser(userDTO: userDTO): Promise<User> {
+        const user = this.userRepository.create(userDTO);
         try {
             return await this.userRepository.save(user);
         } catch (error) {
@@ -29,9 +28,9 @@ export class UserRepository {
         }
     }
 
-    async findUser(email: string): Promise<User> {
+    async findUser(id: number): Promise<User> {
         return await this.userRepository.findOneBy({
-            email,
+            id,
         });
     }
 }
