@@ -2,6 +2,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
 import { BoardCommentModule } from './board/board-comment/board-comment.module';
 import { BoardModule } from './board/board.module';
 import { BoardPasswordModule } from './board/board-password/board-password.module';
@@ -11,6 +12,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { mongoDBConfig } from 'configs/mongoDB.config';
 import { postgreSQLConfig } from 'configs/postgreSQL.config';
+import { BcryptModule } from './bcrypt/bcrypt.module';
 
 @Module({
     imports: [
@@ -20,11 +22,11 @@ import { postgreSQLConfig } from 'configs/postgreSQL.config';
         }),
 
         TypeOrmModule.forRootAsync({
-            name: 'mongodb',
+            name: 'MongoDB',
             useClass: mongoDBConfig,
         }),
         TypeOrmModule.forRootAsync({
-            name: 'postgre',
+            name: 'PostgreSQL',
             useClass: postgreSQLConfig,
         }),
 
@@ -36,6 +38,8 @@ import { postgreSQLConfig } from 'configs/postgreSQL.config';
         BoardModule,
         BoardPasswordModule,
         BoardCommentModule,
+        AuthModule,
+        BcryptModule,
     ],
     controllers: [AppController],
     providers: [AppService],

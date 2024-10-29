@@ -1,18 +1,18 @@
+import { BcryptModule } from 'src/bcrypt/bcrypt.module';
 import { BoardCommentController } from './board-comment.controller';
 import { BoardCommentEntity } from './entity/board-comment.entity';
-import { BoardCommentRepository } from './board-comment.repository';
+import { BoardCommentRepository } from './repository/board-comment.repository';
 import { BoardCommentResolver } from './board-comment.resolver';
 import { BoardCommentService } from './board-comment.service';
 import { BoardEntity } from '../entity/board.entity';
-import { BoardModule } from '../board.module';
 import { BoardRepository } from '../repository/board.repository';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([BoardCommentEntity, BoardEntity], 'mongodb'),
-        BoardModule,
+        TypeOrmModule.forFeature([BoardCommentEntity, BoardEntity], 'MongoDB'),
+        BcryptModule,
     ],
     controllers: [BoardCommentController],
     providers: [

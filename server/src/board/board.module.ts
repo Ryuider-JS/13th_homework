@@ -1,5 +1,6 @@
+import { BcryptModule } from 'src/bcrypt/bcrypt.module';
 import { BoardCommentEntity } from './board-comment/entity/board-comment.entity';
-import { BoardCommentRepository } from './board-comment/board-comment.repository';
+import { BoardCommentRepository } from './board-comment/repository/board-comment.repository';
 import { BoardController } from './board.controller';
 import { BoardEntity } from './entity/board.entity';
 import { BoardIdCounterEntity } from './entity/board-boardId.entity';
@@ -22,9 +23,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
                 BoardReactionEntity,
                 BoardCommentEntity,
             ],
-            'mongodb',
+            'MongoDB',
         ),
         BoardReactionModule,
+        BcryptModule,
     ],
     controllers: [BoardController],
     providers: [
