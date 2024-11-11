@@ -18,6 +18,7 @@ export class UserRepository {
 
     async createUser(signUpDTO: signUpDTO): Promise<UserEntity> {
         const user = this.userRepository.create(signUpDTO);
+
         try {
             return await this.userRepository.save(user);
         } catch (error) {

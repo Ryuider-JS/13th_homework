@@ -11,12 +11,12 @@ import {
     ValidateNested,
 } from 'class-validator';
 
-import { AddressInput } from './address-input.schema';
+import { Address } from './address-input.schema';
 import { Role } from 'src/common/enums/role.enum';
 import { Type } from 'class-transformer';
 
 @InputType()
-export class signUpUser {
+export class SignUpUser {
     @IsString()
     @IsNotEmpty()
     @Field()
@@ -46,11 +46,6 @@ export class signUpUser {
     @Field()
     password: string;
 
-    @IsString()
-    @IsNotEmpty()
-    @Field()
-    image: string;
-
     @IsOptional()
     @IsEnum(Role, {
         message: 'Role은 USER or MANAGER이어야합니다',
@@ -58,10 +53,9 @@ export class signUpUser {
     @Field(() => Role, { nullable: true })
     role?: Role;
 
-    @IsArray()
     @IsOptional()
     @ValidateNested({ each: true })
-    @Type(() => AddressInput)
-    @Field(() => [AddressInput], { nullable: true })
-    addressInput?: AddressInput;
+    @Type(() => Address)
+    @Field(() => Address, { nullable: true })
+    address?: Address;
 }
