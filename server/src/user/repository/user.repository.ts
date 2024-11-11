@@ -1,36 +1,66 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from '../entity/user.entity';
+import { UserEntity } from '../entity/user.entity';
 import {
     ConflictException,
     Injectable,
     InternalServerErrorException,
+    NotFoundException,
 } from '@nestjs/common';
-import { userDTO } from '../dto/user.dto';
+import { signUpDTO } from '../dto/signUp.dto';
 
 @Injectable()
 export class UserRepository {
     constructor(
-        @InjectRepository(User, 'PostgreSQL')
-        private readonly userRepository: Repository<User>,
+        @InjectRepository(UserEntity, 'PostgreSQL')
+        private readonly userRepository: Repository<UserEntity>,
     ) {}
 
-    async createUser(userDTO: userDTO): Promise<User> {
-        const user = this.userRepository.create(userDTO);
+    async createUser(signUpDTO: signUpDTO): Promise<UserEntity> {
+        const user = this.userRepository.create(signUpDTO);
         try {
             return await this.userRepository.save(user);
         } catch (error) {
             if (error.code === '23505') {
-                throw new ConflictException('Existing email');
+                throw new ConflictException('이메일이 존재합니다.');
             } else {
                 throw new InternalServerErrorException();
             }
         }
     }
 
-    async findUser(id: number): Promise<User> {
-        return await this.userRepository.findOneBy({
-            id,
+    async findUserPK(userId: number): Promise<UserEntity> {
+        const user = await this.userRepository.findOneBy({
+            userId,
         });
+        if (!user) {
+            throw new NotFoundException(
+                `해당 유저 ${userId}를 찾지 못했습니다.`,
+            );
+        }
+        return user;
+    }
+
+    async findUserEmail(email: string): Promise<UserEntity> {
+        const user = await this.userRepository.findOneBy({
+            email,
+        });
+
+        if (!user) {
+            throw new NotFoundException(`${email}이 존재하지 않습니다.`);
+        }
+        return user;
+    }
+
+    async findUserNickname(nickname: string): Promise<Boolean> {
+        const user = await this.userRepository.findOneBy({
+            nickname,
+        });
+
+        if (user) {
+            throw new ConflictException(`${nickname}이 중복되어 있습니다.`);
+        }
+
+        return true;
     }
 }

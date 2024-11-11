@@ -2,7 +2,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-// import { AuthModule } from './auth/auth.module';
+import { AuthModule } from './auth/auth.module';
 import { BcryptModule } from './bcrypt/bcrypt.module';
 import { BoardCommentModule } from './board/board-comment/board-comment.module';
 import { BoardModule } from './board/board.module';
@@ -14,6 +14,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { mongoDBConfig } from 'configs/mongoDB.config';
 import { postgreSQLConfig } from 'configs/postgreSQL.config';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
     imports: [
@@ -34,14 +35,16 @@ import { postgreSQLConfig } from 'configs/postgreSQL.config';
         GraphQLModule.forRoot<ApolloDriverConfig>({
             driver: ApolloDriver,
             autoSchemaFile: 'src/graphql/schema.gql',
+            context: ({ req, res }) => ({ req, res }),
         }),
 
         BoardModule,
         BoardPasswordModule,
         BoardCommentModule,
-        // AuthModule,
+        AuthModule,
         BcryptModule,
         UserModule,
+        UploadModule,
     ],
     controllers: [AppController],
     providers: [AppService],

@@ -1,27 +1,44 @@
-// import { BcryptService } from 'src/bcrypt/bcrypt.service';
-// import { Injectable } from '@nestjs/common';
-// import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { Role } from 'src/common/enums/role.enum';
 
-// @Injectable()
-// export class AuthService {
-//     constructor(
-//         private readonly jwtService: JwtService,
-//         private readonly bcryptService: BcryptService,
-//     ) {}
+@Injectable()
+export class AuthService {
+    constructor(
+        private readonly jwtService: JwtService,
+        private readonly configService: ConfigService,
+    ) {}
 
-//     //     async signIn(userDTO: userDTO): Promise<{ accessToken: string }> {
-//     //         const { email, password } = userDTO;
-//     //         const user: User = await this.userRepository.findUser(email);
+    async issueLoginToken(userId: number, role: Role, dev: boolean) {
+        // 여기에 role 넣기
+        // user 또는 counselor
+        const accessToken = await this.jwtService.signAsync(
+            {
+                userId,
+                role,
+                sub: 'accessToken',
+            },
+            {
+                secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
+                expiresIn: dev
+                    ? `${this.configService.get<string>('JWT_REFRESH_EXPIRE')}s`
+                    : `${this.configService.get<string>('JWT_ACCESS_EXPIRE')}s`,
+            },
+        );
 
-//     //         if (!user) {
-//     //             throw new NotFoundException('is not exist email in database');
-//     //         }
+        const refreshToken = await this.jwtService.signAsync(
+            {
+                userId,
+                role,
+                sub: 'refreshToken',
+            },
+            {
+                secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+                expiresIn: `${this.configService.get<string>('JWT_REFRESH_EXPIRE')}s`,
+            },
+        );
 
-//     //         await this.bcryptService.validatePassword(password, user.password);
-//     //         // create access token
-//     //         const payload = { id: user.id };
-//     //         const accessToken = this.jwtService.sign(payload);
-
-//     //         return { accessToken };
-//     //     }
-// }
+        return { accessToken, refreshToken };
+    }
+}
