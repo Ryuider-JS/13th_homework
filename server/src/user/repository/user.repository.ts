@@ -8,6 +8,7 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { signUpDTO } from '../dto/signUp.dto';
+import { SocialLoginDTO } from '../dto/social-login.dto';
 
 @Injectable()
 export class UserRepository {
@@ -30,6 +31,12 @@ export class UserRepository {
         }
     }
 
+    async createSocialUser(socialLoginDto: SocialLoginDTO) {
+        const user = this.userRepository.create(socialLoginDto);
+
+        return await this.userRepository.save(user);
+    }
+
     async findUserPK(userId: number): Promise<UserEntity> {
         const user = await this.userRepository.findOneBy({
             userId,
@@ -43,14 +50,9 @@ export class UserRepository {
     }
 
     async findUserEmail(email: string): Promise<UserEntity> {
-        const user = await this.userRepository.findOneBy({
+        return await this.userRepository.findOneBy({
             email,
         });
-
-        if (!user) {
-            throw new NotFoundException(`${email}이 존재하지 않습니다.`);
-        }
-        return user;
     }
 
     async findUserNickname(nickname: string): Promise<Boolean> {

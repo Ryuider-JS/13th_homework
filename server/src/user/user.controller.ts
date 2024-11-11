@@ -5,6 +5,7 @@ import {
     HttpStatus,
     InternalServerErrorException,
     Post,
+    Req,
     Res,
     Session,
     UploadedFile,
@@ -12,17 +13,20 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { signUpDTO } from './dto/signUp.dto';
-import { UserEntity } from './entity/user.entity';
 import { loginDTO } from './dto/login.dto';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerOptions } from 'configs/multer.config';
 import { uploadFile } from 'src/common/types/upload-file.interface';
-import { AddressDTO } from './dto/address.dto';
+import { SocialLoginDTO } from './dto/social-login.dto';
+import { AuthService } from 'src/auth/auth.service';
 
 @Controller('/api/user')
 export class UserController {
-    constructor(private readonly userService: UserService) {}
+    constructor(
+        private readonly userService: UserService,
+        private readonly authService: AuthService,
+    ) {}
 
     @Post('/signup')
     @HttpCode(HttpStatus.CREATED)
@@ -56,13 +60,38 @@ export class UserController {
         @Res() res: Response,
         @Session() session: Record<string, any>,
     ): Promise<void> {
-        const { accessToken, refreshToken } =
+        const { accessToken, refreshToken, name, image } =
             await this.userService.login(loginDTO);
         res.setHeader('Authorization', `Bearer ${accessToken}`);
 
         session.refreshToken = refreshToken;
 
-        res.status(HttpStatus.OK).json({ accessToken });
+        res.status(HttpStatus.OK).json({ accessToken, name, image });
+    }
+
+    @Post('/social/login')
+    @HttpCode(HttpStatus.OK)
+    async socialLogin(
+        @Body() socialLoginDto: SocialLoginDTO,
+        @Req() req: Request,
+        @Res() res: Response,
+        @Session() session: Record<string, any>,
+    ) {
+        const result = await this.authService.validationSocialToken(
+            socialLoginDto.provider,
+            req.headers.authorization.split(' ')[1],
+        );
+
+        if (result) {
+            const { accessToken, refreshToken } =
+                await this.userService.socialLogin(socialLoginDto);
+
+            res.setHeader('Authorization', `Bearer ${accessToken}`);
+
+            session.refreshToken = refreshToken;
+
+            res.status(HttpStatus.OK).json({ accessToken });
+        }
     }
 
     @Post('/logout')
