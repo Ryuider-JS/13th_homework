@@ -27,7 +27,7 @@ export function sessionConfig(app: INestApplication): void {
             store: redisStore,
             cookie: {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production' ? true : false,
+                secure: process.env.NODE_ENV === 'prod' ? true : false,
                 sameSite: 'none',
                 maxAge: 604800000,
             },

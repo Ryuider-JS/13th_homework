@@ -16,9 +16,9 @@ export class AuthService {
         // user 또는 counselor
         const accessToken = await this.jwtService.signAsync(
             {
-                userId,
+                id: userId,
                 role,
-                sub: 'accessToken',
+                type: 'accessToken',
             },
             {
                 secret: this.configService.get<string>('JWT_ACCESS_SECRET'),

@@ -19,7 +19,7 @@
         "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
         "test:e2e": "jest --config ./test/jest-e2e.json",
         "codegen": "graphql-codegen --config ./configs/codegen.config.ts",
-        "docker": "docker-compose -f docker-compose.dev.yml --env-file .env.development down -v && docker-compose -f docker-compose.dev.yml --env-file .env.development up --build"
+        "docker": "docker-compose -f docker-compose.dev.yml --env-file .env.development down && docker-compose -f docker-compose.dev.yml --env-file .env.development up --build"
     },
     "dependencies": {
         "@apollo/server": "^4.11.0",
@@ -43,7 +43,6 @@
         "@types/passport-jwt": "^4.0.1",
         "apollo-server-express": "^3.13.0",
         "aws-sdk": "^2.1691.0",
-        "bcrypt": "^5.1.1",
         "bcryptjs": "^2.4.3",
         "class-transformer": "^0.5.1",
         "class-validator": "^0.14.1",

@@ -1,7 +1,5 @@
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { BcryptModule } from './bcrypt/bcrypt.module';
 import { BoardCommentModule } from './board/board-comment/board-comment.module';
@@ -47,7 +45,5 @@ import { postgreSQLConfig } from 'configs/postgreSQL.config';
         UserModule,
         UploadModule,
     ],
-    controllers: [AppController],
-    providers: [AppService],
 })
 export class AppModule {}
