@@ -1,5 +1,4 @@
 /** @format */
-'use client';
 
 import { boardUrlEndPoint, reactionUrlEndPoint } from '~/config/axiosConfig';
 
