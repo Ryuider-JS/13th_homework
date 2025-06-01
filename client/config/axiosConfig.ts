@@ -18,12 +18,12 @@ export enum EUrlEndPoint {
 	REACTION = '/reaction',
 }
 
-export const boardUrlEndPoint = '/board';
-export const boardsUrlEndPoint = `${boardUrlEndPoint}s`;
-export const newUrlEndPoint = '/new';
-export const editUrlEndPoint = '/edit';
-export const commentUrlEndPoint = '/comment';
-export const reactionUrlEndPoint = '/reaction';
+export const boardUrlEndPoint = EUrlEndPoint.BOARD;
+export const boardsUrlEndPoint = EUrlEndPoint.BOARDS;
+export const newUrlEndPoint = EUrlEndPoint.NEW;
+export const editUrlEndPoint = EUrlEndPoint.EDIT;
+export const commentUrlEndPoint = EUrlEndPoint.COMMENT;
+export const reactionUrlEndPoint = EUrlEndPoint.REACTION;
 
 api.interceptors.request.use(
 	(config) => {

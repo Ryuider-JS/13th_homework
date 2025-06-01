@@ -1,6 +1,6 @@
 /** @format */
 // NOTE 추후 증감 관련 api 호출이 되면 컴포넌트화할 예정
-// [ ] 시발 Suspense / hoc / component composite / promise / use / custom hook.. 시발 제발
+// [ ] 시발 Suspense / hoc / component composite / promise / use / custom hook
 
 import { IBoardReactionProps } from '@/models/board.type';
 import Image from 'next/image';
